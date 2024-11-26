@@ -1,0 +1,21 @@
+{% extends 'layout.html' %}
+{% block body %}
+<div class=" cold-md-4-offset-md-4">
+    <div class=" card card-body">
+        <div class="form-group">
+            <form action="/update/{{contact.0}}" method="POST">
+            <div class="form-group">
+                <input type="text" name="fullname" placeholder="Fullname" value="{{ contact.1 }}" class="form-control">
+            <div class="form-group">
+                <input type="text" name="phone" placeholder="Phone" value="{{ contact.2 }}" class="form-control">
+            <div class="form-group">            
+                <input type="text" name="email" placeholder="Email" value="{{ contact.3 }}" class="form-control">
+            <div class="form-group">           
+                <button type="submit" class="btn btn-primary btn-block">
+                Save
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,33 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+<div class="row">
+    <div class="col-md-12">
+        <h4>Calificaciones</h4>
+        <table class="table table-striped table-bordered bg-white table-sm">
+            <thead>
+                <tr>
+                    <td>Estudiante</td>
+                    <td>Curso</td>
+                    <td>Nota</td>
+                    <td>Comentarios</td>
+                    <td>Operaciones</td>
+                </tr>
+            </thead>
+            <tbody>
+                {% for calificacion in calificaciones %}
+                <tr>
+                    <td>{{ calificacion[0] }}</td> <!-- Nombre del estudiante -->
+                    <td>{{ calificacion[1] }}</td> <!-- Nombre del curso -->
+                    <td>{{ calificacion[2] }}</td> <!-- Nota -->
+                    <td>{{ calificacion[3] }}</td> <!-- Comentarios -->
+                    <td>
+                        <a href="/delete_calificacion/{{ calificacion[4] }}" class="btn btn-danger btn-sm">Eliminar</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

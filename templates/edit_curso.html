@@ -1,0 +1,21 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+<div class="row">
+    <div class="col-md-6 offset-md-3">
+        <h4>Editar Curso</h4>
+        <form action="/edit_curso/{{ curso[0] }}" method="POST">
+            <div class="form-group">
+                <input type="text" name="nombre" class="form-control" value="{{ curso[1] }}" required>
+            </div>
+            <div class="form-group mt-2">
+                <textarea name="descripcion" class="form-control" required>{{ curso[2] }}</textarea>
+            </div>
+            <div class="form-group mt-2">
+                <input type="number" name="id_profesor" class="form-control" value="{{ curso[3] }}" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block mt-3">Actualizar Curso</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

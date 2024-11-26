@@ -1,0 +1,28 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+<div class="row">
+    <div class="col-md-6 offset-md-3">
+        <h4>Editar Inscripción</h4>
+        <form action="/edit_inscripcion/{{ inscripcion[0] }}" method="POST">
+            <div class="form-group">
+                <select name="id_estudiante" class="form-control" required>
+                    <option value="{{ inscripcion[1] }}" selected>{{ inscripcion[2] }}</option>
+                    {% for estudiante in estudiantes %}
+                    <option value="{{ estudiante[0] }}">{{ estudiante[1] }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group mt-2">
+                <select name="id_curso" class="form-control" required>
+                    <option value="{{ inscripcion[3] }}" selected>{{ inscripcion[4] }}</option>
+                    {% for curso in cursos %}
+                    <option value="{{ curso[0] }}">{{ curso[1] }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block mt-3">Actualizar Inscripción</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

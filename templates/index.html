@@ -1,0 +1,126 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+<div class="row">
+    <div class="col-md-5"></div>
+
+    {% with messages=get_flashed_messages() %}
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="card card-body">
+        <!-- Formulario para agregar un estudiante -->
+        <h4>Agregar Estudiante</h4>
+        <form action="/add_estudiante" method="POST">
+            <div class="form-group">
+                <input type="text" name="nombre" placeholder="Nombre del Estudiante" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <input type="text" name="matricula" placeholder="Matrícula" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <input type="text" name="carrera" placeholder="Carrera" class="form-control" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Agregar Estudiante</button>
+        </form>
+
+        <!-- Formulario para agregar un curso -->
+        <h4 class="mt-4">Agregar Curso</h4>
+        <form action="/add_curso" method="POST">
+            <div class="form-group">
+                <input type="text" name="nombre" placeholder="Nombre del Curso" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <textarea name="descripcion" placeholder="Descripción del Curso" class="form-control" required></textarea>
+            </div>
+            <div class="form-group">
+                <input type="number" name="id_profesor" placeholder="ID del Profesor" class="form-control" required>
+            </div>
+            <button type="submit" class="btn btn-success btn-block">Agregar Curso</button>
+        </form>
+        
+        <!-- Formulario para inscribir un estudiante -->
+        <h4 class="mt-4">Inscribir Estudiante en Curso</h4>
+        <form action="/inscribir" method="POST">
+            <div class="form-group">
+                <select name="id_estudiante" class="form-control" required>
+                    <option value="">Seleccione Estudiante</option>
+                    {% for estudiante in estudiantes %}
+                    <option value="{{ estudiante[0] }}">{{ estudiante[1] }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <select name="id_curso" class="form-control" required>
+                    <option value="">Seleccione Curso</option>
+                    {% for curso in cursos %}
+                    <option value="{{ curso[0] }}">{{ curso[1] }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn btn-info btn-block">Inscribir Estudiante</button>
+        </form>
+    </div>
+
+    <div class="col-md-7 mt-4">
+        <!-- Tabla de Inscripciones -->
+        <h4>Inscripciones Actuales</h4>
+        <table class="table table-striped table-bordered bg-white table-sm">
+            <thead>
+                <tr>
+                    <td>Curso</td>
+                    <td>Estudiante</td>
+                    <td>Operaciones</td>
+                </tr>
+            </thead>
+            <tbody>
+                {% for inscripcion in inscripciones %}
+                <tr>
+                    <td>{{ inscripcion[1] }}</td> <!-- Nombre del curso -->
+                    <td>{{ inscripcion[2] }}</td> <!-- Nombre del estudiante -->
+                    <td>
+                        <a href="/delete_inscripcion/{{ inscripcion[0] }}" class="btn btn-danger btn-sm">Eliminar</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="col-md-7 mt-4">
+        <!-- Tabla de Calificaciones -->
+        <h4>Calificaciones</h4>
+        <table class="table table-striped table-bordered bg-white table-sm">
+            <thead>
+                <tr>
+                    <td>Estudiante</td>
+                    <td>Curso</td>
+                    <td>Nota</td>
+                    <td>Comentarios</td>
+                    <td>Operaciones</td>
+                </tr>
+            </thead>
+            <tbody>
+                {% for calificacion in calificaciones %}
+                <tr>
+                    <td>{{ calificacion[0] }}</td> <!-- Nombre del estudiante -->
+                    <td>{{ calificacion[1] }}</td> <!-- Nombre del curso -->
+                    <td>{{ calificacion[2] }}</td> <!-- Nota -->
+                    <td>{{ calificacion[3] }}</td> <!-- Comentarios -->
+                    <td>
+                        <a href="/delete_calificacion/{{ calificacion[4] }}" class="btn btn-danger btn-sm">Eliminar</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
