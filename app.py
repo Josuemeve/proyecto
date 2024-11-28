@@ -40,7 +40,6 @@ def login():
     if request.method == "POST":
         correo = request.form["correo"]
         contraseña = request.form["contraseña"]
-
         cur = mysql.connection.cursor()
         cur.execute("SELECT id_usuario, rol FROM usuarios WHERE correo = %s AND contraseña = %s", 
                     (correo, contraseña))
@@ -152,27 +151,84 @@ def delete_usuario(id):
     flash("Usuario eliminado correctamente")
     return redirect(url_for("ver_usuarios"))
 
-# Más rutas aquí (CRUD de Cursos, Estudiantes, Inscripciones y Calificaciones)
+# CRUD de Cursos
+@app.route("/cursos")
+@login_required
+def ver_cursos():
+    cur = mysql.connection.cursor()
+    cur.execute("SELECT * FROM Cursos")
+    cursos = cur.fetchall()
+    return render_template("ver_cursos.html", cursos=cursos)
 
-# Agregar un nuevo curso
 @app.route("/add_curso", methods=["POST"])
 @login_required
 def add_curso():
-    if request.method == 'POST':
+    nombre = request.form["nombre"]
+    descripcion = request.form["descripcion"]
+    id_profesor = request.form["id_profesor"]
+    if not all([nombre, descripcion, id_profesor]):
+        flash("Todos los campos son obligatorios.")
+        return redirect(url_for("index"))
+    cur = mysql.connection.cursor()
+    cur.execute("INSERT INTO Cursos (nombre, descripcion, id_profesor) VALUES (%s, %s, %s)", 
+                (nombre, descripcion, id_profesor))
+    mysql.connection.commit()
+    flash("Curso agregado satisfactoriamente")
+    return redirect(url_for('index'))
+
+
+@app.route("/edit_curso/<int:id>", methods=["GET", "POST"])
+@login_required
+def edit_curso(id):
+    # Establecer la conexión con la base de datos
+    cur = mysql.connection.cursor()
+
+    if request.method == "POST":
+        # Obtener los datos del formulario de edición
         nombre = request.form["nombre"]
         descripcion = request.form["descripcion"]
         id_profesor = request.form["id_profesor"]
-        if not all([nombre, descripcion, id_profesor]):
-            flash("Todos los campos son obligatorios.")
-            return redirect(url_for("index"))
-        cur = mysql.connection.cursor()
-        cur.execute("INSERT INTO Cursos (nombre, descripcion, id_profesor) VALUES (%s, %s, %s)", 
-                    (nombre, descripcion, id_profesor))
-        mysql.connection.commit()
-        flash("Curso agregado satisfactoriamente")
-        return redirect(url_for('index'))
+        
+        # Actualizar los datos del curso en la base de datos
+        cur.execute("""
+            UPDATE Cursos
+            SET nombre = %s, descripcion = %s, id_profesor = %s
+            WHERE id_curso = %s
+        """, (nombre, descripcion, id_profesor, id))
+        mysql.connection.commit()  # Confirmar los cambios en la base de datos
+        
+        flash("Curso actualizado satisfactoriamente")
+        return redirect(url_for('ver_cursos'))  # Redirigir a la página de ver cursos
 
-# Agregar un nuevo estudiante
+    else:
+        # Si es una solicitud GET, obtener los datos del curso con el id proporcionado
+        cur.execute("SELECT * FROM Cursos WHERE id_curso = %s", (id,))
+        curso = cur.fetchone()  # Obtener el curso con el id correspondiente
+
+        if curso is None:
+            flash("Curso no encontrado")
+            return redirect(url_for('ver_cursos'))  # Si el curso no existe, redirigir a la lista de cursos
+        
+        return render_template("edit_curso.html", curso=curso)  # Mostrar el formulario de edición con los datos actuales
+
+@app.route("/delete_curso/<int:id>")
+@login_required
+def delete_curso(id):
+    cur = mysql.connection.cursor()
+    cur.execute("DELETE FROM Cursos WHERE id_curso = %s", (id,))
+    mysql.connection.commit()
+    flash("Curso eliminado satisfactoriamente")
+    return redirect(url_for('ver_cursos'))
+
+# CRUD de Estudiantes
+@app.route("/estudiantes")
+@login_required
+def ver_estudiantes():
+    cur = mysql.connection.cursor()
+    cur.execute("SELECT * FROM Estudiantes")
+    estudiantes = cur.fetchall()
+    return render_template("ver_estudiantes.html", estudiantes=estudiantes)
+
 @app.route("/add_estudiante", methods=["POST"])
 @login_required
 def add_estudiante():
@@ -180,34 +236,88 @@ def add_estudiante():
         nombre = request.form["nombre"]
         matricula = request.form["matricula"]
         carrera = request.form["carrera"]
+        
+        # Verificar que los campos no estén vacíos
         if not all([nombre, matricula, carrera]):
             flash("Todos los campos son obligatorios.")
-            return redirect(url_for("index"))
+            return redirect(url_for("ver_estudiantes"))
+        
+        # Insertar el nuevo estudiante en la base de datos
         cur = mysql.connection.cursor()
         cur.execute("INSERT INTO Estudiantes (nombre, matricula, carrera) VALUES (%s, %s, %s)", 
                     (nombre, matricula, carrera))
         mysql.connection.commit()
+        
         flash("Estudiante agregado satisfactoriamente")
-        return redirect(url_for('index'))
+        return redirect(url_for('ver_estudiantes'))
 
-# Inscribir un estudiante en un curso
-@app.route("/inscribir", methods=["POST"])
+@app.route("/edit_estudiante/<int:id>", methods=["GET", "POST"])
 @login_required
-def inscribir():
-    if request.method == 'POST':
-        id_estudiante = request.form["id_estudiante"]
-        id_curso = request.form["id_curso"]
-        if not all([id_estudiante, id_curso]):
+def edit_estudiante(id):
+    cur = mysql.connection.cursor()
+    
+    if request.method == "POST":
+        # Obtener los datos del formulario
+        nombre = request.form["nombre"]
+        matricula = request.form["matricula"]
+        carrera = request.form["carrera"]
+        
+        # Verificar que los campos no estén vacíos
+        if not all([nombre, matricula, carrera]):
             flash("Todos los campos son obligatorios.")
-            return redirect(url_for("index"))
-        cur = mysql.connection.cursor()
-        cur.execute("INSERT INTO Inscripciones (id_estudiante, id_curso, fecha_inscripcion) VALUES (%s, %s, NOW())", 
-                    (id_estudiante, id_curso))
+            return redirect(url_for("edit_estudiante", id=id))
+        
+        # Actualizar los datos del estudiante en la base de datos
+        cur.execute("""
+            UPDATE Estudiantes
+            SET nombre = %s, matricula = %s, carrera = %s
+            WHERE id_estudiante = %s
+        """, (nombre, matricula, carrera, id))
         mysql.connection.commit()
-        flash("Estudiante inscrito satisfactoriamente")
-        return redirect(url_for('index'))
+        
+        flash("Estudiante actualizado correctamente")
+        return redirect(url_for("ver_estudiantes"))
+    
+    # Si es GET, obtener los datos del estudiante y mostrarlos en el formulario
+    else:
+        cur.execute("SELECT * FROM Estudiantes WHERE id_estudiante = %s", (id,))
+        estudiante = cur.fetchone()
+        return render_template("edit_estudiante.html", estudiante=estudiante)
 
-# Eliminar una inscripción
+
+@app.route("/delete_estudiante/<int:id>")
+@login_required
+def delete_estudiante(id):
+    cur = mysql.connection.cursor()
+    cur.execute("DELETE FROM Estudiantes WHERE id_estudiante = %s", (id,))
+    mysql.connection.commit()
+    flash("Estudiante eliminado satisfactoriamente")
+    return redirect(url_for('ver_estudiantes'))
+
+#CRUD INSCRIPCIONES
+@app.route("/inscripciones")
+@login_required
+def ver_inscripciones():
+    cur = mysql.connection.cursor()
+    
+    # Obtener estudiantes y cursos para los select
+    cur.execute("SELECT id_estudiante, nombre FROM Estudiantes")
+    estudiantes = cur.fetchall()
+    
+    cur.execute("SELECT id_curso, nombre FROM Cursos")
+    cursos = cur.fetchall()
+    
+    # Obtener las inscripciones
+    cur.execute("""
+        SELECT i.id_inscripcion, c.nombre AS curso, e.nombre AS estudiante, i.fecha_inscripcion
+        FROM inscripciones i
+        JOIN cursos c ON i.id_curso = c.id_curso
+        JOIN estudiantes e ON i.id_estudiante = e.id_estudiante
+    """)
+    inscripciones = cur.fetchall()
+    
+    return render_template("ver_inscripciones.html", inscripciones=inscripciones, estudiantes=estudiantes, cursos=cursos)
+
 @app.route("/delete_inscripcion/<int:id>")
 @login_required
 def delete_inscripcion(id):
@@ -217,27 +327,25 @@ def delete_inscripcion(id):
     flash("Inscripción eliminada satisfactoriamente")
     return redirect(url_for('index'))
 
-# Agregar una calificación a un estudiante en un curso
-@app.route("/add_calificacion", methods=["POST"])
+@app.route("/inscribir", methods=["POST"])
 @login_required
-def add_calificacion():
-    if request.method == 'POST':
-        id_inscripcion = request.form["id_inscripcion"]
-        nota = request.form["nota"]
-        comentarios = request.form["comentarios"]
-        if not id_inscripcion or nota is None:
-            flash("La inscripción y la nota son obligatorias.")
-            return redirect(url_for("index"))
-        cur = mysql.connection.cursor()
-        cur.execute("INSERT INTO Calificaciones (id_inscripcion, nota, comentarios) VALUES (%s, %s, %s)", 
-                    (id_inscripcion, nota, comentarios))
-        mysql.connection.commit()
-        flash("Calificación agregada satisfactoriamente")
-        return redirect(url_for('index'))
+def inscribir():
+    id_estudiante = request.form["id_estudiante"]
+    id_curso = request.form["id_curso"]
+    if not all([id_estudiante, id_curso]):
+        flash("Todos los campos son obligatorios.")
+        return redirect(url_for("ver_inscripciones"))
+    cur = mysql.connection.cursor()
+    cur.execute("INSERT INTO Inscripciones (id_estudiante, id_curso, fecha_inscripcion) VALUES (%s, %s, NOW())", 
+                (id_estudiante, id_curso))
+    mysql.connection.commit()
+    flash("Estudiante inscrito satisfactoriamente")
+    return redirect(url_for('index'))
 
+
+# CRUD de Calificaciones
 # Ver las calificaciones de un estudiante en un curso
 @app.route("/ver_calificaciones")
-@login_required
 def ver_calificaciones():
     cur = mysql.connection.cursor()
     cur.execute("""
@@ -250,7 +358,7 @@ def ver_calificaciones():
     calificaciones = cur.fetchall()
     return render_template("ver_calificaciones.html", calificaciones=calificaciones)
 
-# Eliminar una calificación
+
 @app.route("/delete_calificacion/<int:id>")
 @login_required
 def delete_calificacion(id):
@@ -260,30 +368,27 @@ def delete_calificacion(id):
     flash("Calificación eliminada satisfactoriamente")
     return redirect(url_for('ver_calificaciones'))
 
-# Ruta para editar un curso
-@app.route("/edit_curso/<int:id>", methods=["GET", "POST"])
+@app.route("/add_calificacion", methods=["POST"])
 @login_required
-def edit_curso(id):
-    cur = mysql.connection.cursor()
-    if request.method == "POST":
-        nombre = request.form["nombre"]
-        descripcion = request.form["descripcion"]
-        id_profesor = request.form["id_profesor"]
-        if not all([nombre, descripcion, id_profesor]):
-            flash("Todos los campos son obligatorios.")
-            return redirect(url_for("edit_curso", id=id))
+def add_calificacion():
+    if request.method == 'POST':
+        id_inscripcion = request.form["id_inscripcion"]
+        nota = request.form["nota"]
+        comentarios = request.form["comentarios"]
+        
+        # Validación de campos
+        if not all([id_inscripcion, nota]):
+            flash("Los campos de inscripción y nota son obligatorios.")
+            return redirect(url_for('ver_calificaciones'))
+        
+        cur = mysql.connection.cursor()
         cur.execute("""
-            UPDATE Cursos
-            SET nombre = %s, descripcion = %s, id_profesor = %s
-            WHERE id_curso = %s
-        """, (nombre, descripcion, id_profesor, id))
+            INSERT INTO Calificaciones (id_inscripcion, nota, comentarios)
+            VALUES (%s, %s, %s)
+        """, (id_inscripcion, nota, comentarios))
         mysql.connection.commit()
-        flash("Curso actualizado satisfactoriamente")
-        return redirect(url_for('index'))
-    else:
-        cur.execute("SELECT * FROM Cursos WHERE id_curso = %s", (id,))
-        curso = cur.fetchone()
-        return render_template("edit_curso.html", curso=curso)
+        flash("Calificación agregada satisfactoriamente")
+        return redirect(url_for('ver_calificaciones'))
 
 if __name__ == "__main__":
     app.run(port=3000, debug=True)

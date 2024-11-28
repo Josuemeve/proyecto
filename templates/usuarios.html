@@ -1,0 +1,56 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<h2 class="text-center">Gestión de Usuarios</h2>
+<!-- Formulario de agregar usuario -->
+<h3>Agregar Usuario</h3>
+<form action="{{ url_for('add_usuario') }}" method="POST">
+    <div class="form-group mb-3">
+        <label for="nombre_usuario">Nombre de Usuario</label>
+        <input type="text" name="nombre_usuario" id="nombre_usuario" class="form-control" required>
+    </div>
+    <div class="form-group mb-3">
+        <label for="correo">Correo Electrónico</label>
+        <input type="email" name="correo" id="correo" class="form-control" required>
+    </div>
+    <div class="form-group mb-3">
+        <label for="contraseña">Contraseña</label>
+        <input type="password" name="contraseña" id="contraseña" class="form-control" required>
+    </div>
+    <div class="form-group mb-3">
+        <label for="rol">Rol</label>
+        <select name="rol" id="rol" class="form-control" required>
+            <option value="administrador">Administrador</option>
+            <option value="usuario">Usuario</option>
+        </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Agregar Usuario</button>
+</form>
+
+<!-- Tabla de usuarios -->
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Correo</th>
+            <th>Rol</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for usuario in usuarios %}
+        <tr>
+            <td>{{ usuario[0] }}</td>
+            <td>{{ usuario[1] }}</td>
+            <td>{{ usuario[2] }}</td>
+            <td>{{ usuario[3] }}</td>
+            <td>
+                <a href="{{ url_for('edit_usuario', id=usuario[0]) }}" class="btn btn-warning btn-sm">Editar</a>
+                <a href="{{ url_for('delete_usuario', id=usuario[0]) }}" class="btn btn-danger btn-sm">Eliminar</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

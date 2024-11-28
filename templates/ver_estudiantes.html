@@ -1,0 +1,50 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<h2 class="text-center">Lista de Estudiantes</h2>
+
+<!-- Formulario para agregar un nuevo estudiante -->
+<h3>Agregar Estudiante</h3>
+<form action="{{ url_for('add_estudiante') }}" method="POST">
+    <div class="form-group mb-3">
+        <label for="nombre">Nombre</label>
+        <input type="text" name="nombre" id="nombre" class="form-control" required>
+    </div>
+    <div class="form-group mb-3">
+        <label for="matricula">Matrícula</label>
+        <input type="text" name="matricula" id="matricula" class="form-control" required>
+    </div>
+    <div class="form-group mb-3">
+        <label for="carrera">Carrera</label>
+        <input type="text" name="carrera" id="carrera" class="form-control" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Agregar Estudiante</button>
+</form>
+
+<!-- Tabla de estudiantes -->
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Matrícula</th>
+            <th>Carrera</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for estudiante in estudiantes %}
+        <tr>
+            <td>{{ estudiante[0] }}</td>
+            <td>{{ estudiante[1] }}</td>
+            <td>{{ estudiante[2] }}</td>
+            <td>{{ estudiante[3] }}</td>
+            <td>
+                <a href="{{ url_for('edit_estudiante', id=estudiante[0]) }}" class="btn btn-warning btn-sm">Editar</a>
+                <a href="{{ url_for('delete_estudiante', id=estudiante[0]) }}" class="btn btn-danger btn-sm">Eliminar</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
