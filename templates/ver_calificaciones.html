@@ -5,10 +5,11 @@
 
 <!-- Formulario de Agregar Calificación -->
 <h3>Agregar Calificación</h3>
-<form action="{{ url_for('add_calificacion') }}" method="POST">
+<form action="{{ url_for('ver_calificaciones') }}" method="POST" class="mt-4">
     <div class="form-group mb-3">
         <label for="id_inscripcion">Estudiante y Curso</label>
         <select name="id_inscripcion" id="id_inscripcion" class="form-control" required>
+            <option value="" disabled selected>Seleccione una inscripción</option>
             {% for inscripcion in inscripciones %}
                 <option value="{{ inscripcion[0] }}">
                     {{ inscripcion[1] }} - {{ inscripcion[2] }}
@@ -28,6 +29,7 @@
 </form>
 
 <!-- Tabla de Calificaciones -->
+<h3 class="mt-4">Calificaciones Existentes</h3>
 <table class="table table-striped">
     <thead>
         <tr>
@@ -46,7 +48,7 @@
             <td>{{ calificacion[2] }}</td>  <!-- Nota -->
             <td>{{ calificacion[3] }}</td>  <!-- Comentarios -->
             <td>
-                <a href="{{ url_for('delete_calificacion', id=calificacion[2]) }}" class="btn btn-danger btn-sm">Eliminar</a>
+                <a href="{{ url_for('delete_calificacion', id=calificacion[4]) }}" class="btn btn-danger btn-sm">Eliminar</a>
             </td>
         </tr>
         {% endfor %}

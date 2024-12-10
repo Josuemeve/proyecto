@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_mysqldb import MySQL
 from functools import wraps
+import sqlite3
 
 app = Flask(__name__)
 
@@ -345,19 +346,48 @@ def inscribir():
 
 # CRUD de Calificaciones
 # Ver las calificaciones de un estudiante en un curso
-@app.route("/ver_calificaciones")
+@app.route("/ver_calificaciones", methods=["POST", "GET"])
+@login_required
 def ver_calificaciones():
     cur = mysql.connection.cursor()
+
+    if request.method == "POST":
+        id_inscripcion = request.form["id_inscripcion"]
+        nota = request.form["nota"]
+        comentarios = request.form.get("comentarios", "")
+        
+        if not id_inscripcion or not nota:
+            flash("Los campos de inscripción y nota son obligatorios.")
+            return redirect(url_for("ver_calificaciones"))
+        
+        # Inserta la calificación en la base de datos
+        cur.execute("""
+            INSERT INTO calificaciones (id_inscripcion, nota, comentarios)
+            VALUES (%s, %s, %s)
+        """, (id_inscripcion, nota, comentarios))
+        mysql.connection.commit()
+        flash("Calificación agregada satisfactoriamente")
+    
+    # Recupera las calificaciones
     cur.execute("""
-        SELECT e.nombre AS estudiante, c.nombre AS curso, cal.nota, cal.comentarios
-        FROM Calificaciones cal
-        JOIN Inscripciones i ON cal.id_inscripcion = i.id_inscripcion
-        JOIN Estudiantes e ON i.id_estudiante = e.id_estudiante
-        JOIN Cursos c ON i.id_curso = c.id_curso
+        SELECT e.nombre AS estudiante, c.nombre AS curso, cal.nota, cal.comentarios, cal.id_calificacion
+        FROM calificaciones cal
+        JOIN inscripciones i ON cal.id_inscripcion = i.id_inscripcion
+        JOIN estudiantes e ON i.id_estudiante = e.id_estudiante
+        JOIN cursos c ON i.id_curso = c.id_curso
     """)
     calificaciones = cur.fetchall()
-    return render_template("ver_calificaciones.html", calificaciones=calificaciones)
 
+    # Recupera las inscripciones para el formulario de agregar calificación
+    cur.execute("""
+        SELECT i.id_inscripcion, e.nombre AS estudiante, c.nombre AS curso
+        FROM inscripciones i
+        JOIN estudiantes e ON i.id_estudiante = e.id_estudiante
+        JOIN cursos c ON i.id_curso = c.id_curso
+    """)
+    inscripciones = cur.fetchall()
+
+    return render_template("ver_calificaciones.html", calificaciones=calificaciones, inscripciones=inscripciones)
 
 @app.route("/delete_calificacion/<int:id>")
 @login_required
@@ -367,28 +397,6 @@ def delete_calificacion(id):
     mysql.connection.commit()
     flash("Calificación eliminada satisfactoriamente")
     return redirect(url_for('ver_calificaciones'))
-
-@app.route("/add_calificacion", methods=["POST"])
-@login_required
-def add_calificacion():
-    if request.method == 'POST':
-        id_inscripcion = request.form["id_inscripcion"]
-        nota = request.form["nota"]
-        comentarios = request.form["comentarios"]
-        
-        # Validación de campos
-        if not all([id_inscripcion, nota]):
-            flash("Los campos de inscripción y nota son obligatorios.")
-            return redirect(url_for('ver_calificaciones'))
-        
-        cur = mysql.connection.cursor()
-        cur.execute("""
-            INSERT INTO Calificaciones (id_inscripcion, nota, comentarios)
-            VALUES (%s, %s, %s)
-        """, (id_inscripcion, nota, comentarios))
-        mysql.connection.commit()
-        flash("Calificación agregada satisfactoriamente")
-        return redirect(url_for('ver_calificaciones'))
 
 if __name__ == "__main__":
     app.run(port=3000, debug=True)
